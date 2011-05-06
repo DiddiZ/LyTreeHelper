@@ -27,15 +27,15 @@ import java.util.Random;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.PluginManager;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.LeavesDecayEvent;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.PluginManager;
 
 /**
  *
@@ -45,9 +45,9 @@ public class LyTreeHelperBlockListener extends BlockListener {
     /**
      * Plugin.
      */
-    private LyTreeHelperPlugin plugin;
+    private final LyTreeHelperPlugin plugin;
 
-    private List<Location> checkBlocks = new ArrayList<Location>();
+    private final List<Location> checkBlocks = new ArrayList<Location>();
 
     private List<Block> checkedBlocks;
 
@@ -70,22 +70,22 @@ public class LyTreeHelperBlockListener extends BlockListener {
     }
 
     public void registerEvents() {
-        PluginManager pm = plugin.getServer().getPluginManager();
+        final PluginManager pm = plugin.getServer().getPluginManager();
 
         pm.registerEvent(Event.Type.LEAVES_DECAY, this, Priority.High, plugin);
         pm.registerEvent(Event.Type.BLOCK_BREAK, this, Priority.High, plugin);
     }
 
     public void destroyTree(Block firstBlock) {
-        LyTreeHelperConfiguration worldConfig = this.plugin.getWorldConfig(firstBlock.getWorld().getName());
+        final LyTreeHelperConfiguration worldConfig = this.plugin.getWorldConfig(firstBlock.getWorld().getName());
 
         this.checkedBlocks = new ArrayList<Block>();
         this.checkedBlocksCounter = 0;
-        boolean returnValue = true;
+        final boolean returnValue = true;
 
         if ((worldConfig.isDestroyAllWood() && !worldConfig.isDestroyAll())) {
             if (destroyTreeWoodOnly(firstBlock, returnValue, worldConfig)) {
-                for (Block block : this.checkedBlocks) {
+                for (final Block block : this.checkedBlocks) {
                     if(block.getType() == Material.LOG) {
                         block.getWorld().dropItemNaturally(
                                 block.getLocation(), new ItemStack(Material.LOG, 1, (short)0,
@@ -99,7 +99,7 @@ public class LyTreeHelperBlockListener extends BlockListener {
             }
         } else if (!worldConfig.isDestroyAllWood()) {
             if (destroyTreeLeaves(firstBlock, returnValue, worldConfig)) {
-                for (Block block : this.checkedBlocks) {
+                for (final Block block : this.checkedBlocks) {
                     if (block.getType() != Material.SNOW) {
                         dropLeaveItems(block);
                     }
@@ -110,7 +110,7 @@ public class LyTreeHelperBlockListener extends BlockListener {
                 }
             }
         } else if (destroyTreeWood(firstBlock, returnValue, worldConfig)) {
-            for (Block block : this.checkedBlocks) {
+            for (final Block block : this.checkedBlocks) {
                 if (block.getType() == Material.LOG) {
                     block.getWorld().dropItemNaturally(
                             block.getLocation(), new ItemStack(Material.LOG, 1, (short)0,
@@ -136,8 +136,8 @@ public class LyTreeHelperBlockListener extends BlockListener {
             return false;
         }
 
-        for (Location currCheckBlock : this.checkBlocks) {
-            Block relative = currentBlock.getRelative((int)currCheckBlock.getX(), (int)currCheckBlock.getY(), (int)currCheckBlock.getZ());
+        for (final Location currCheckBlock : this.checkBlocks) {
+            final Block relative = currentBlock.getRelative((int)currCheckBlock.getX(), (int)currCheckBlock.getY(), (int)currCheckBlock.getZ());
 
             if(!this.checkTreeRadius(worldConfig.getMaxTreeRadius(), startBlock, relative)) {
                 continue;
@@ -167,8 +167,8 @@ public class LyTreeHelperBlockListener extends BlockListener {
             return false;
         }
 
-        for (Location currCheckBlock : this.checkBlocks) {
-            Block relative = currentBlock.getRelative((int)currCheckBlock.getX(), (int)currCheckBlock.getY(), (int)currCheckBlock.getZ());
+        for (final Location currCheckBlock : this.checkBlocks) {
+            final Block relative = currentBlock.getRelative((int)currCheckBlock.getX(), (int)currCheckBlock.getY(), (int)currCheckBlock.getZ());
 
             if(!this.checkTreeRadius(worldConfig.getMaxTreeRadius(), startBlock, relative)) {
                 continue;
@@ -200,8 +200,8 @@ public class LyTreeHelperBlockListener extends BlockListener {
             return false;
         }
 
-        for (Location currCheckBlock : this.checkBlocks) {
-            Block relative = currentBlock.getRelative((int)currCheckBlock.getX(), (int)currCheckBlock.getY(), (int)currCheckBlock.getZ());
+        for (final Location currCheckBlock : this.checkBlocks) {
+            final Block relative = currentBlock.getRelative((int)currCheckBlock.getX(), (int)currCheckBlock.getY(), (int)currCheckBlock.getZ());
 
             if(!this.checkTreeRadius(worldConfig.getMaxTreeRadius(), startBlock, relative)) {
                 continue;
@@ -238,7 +238,9 @@ public class LyTreeHelperBlockListener extends BlockListener {
 
     @Override
     public void onLeavesDecay(LeavesDecayEvent event) {
-        LyTreeHelperConfiguration worldConfig = this.plugin.getWorldConfig(event.getBlock().getWorld().getName());
+        if (event.isCancelled())
+            return;
+        final LyTreeHelperConfiguration worldConfig = this.plugin.getWorldConfig(event.getBlock().getWorld().getName());
 
         if (worldConfig.isDestroyAll() && !worldConfig.isDecay()) {
             event.setCancelled(true);
@@ -259,7 +261,7 @@ public class LyTreeHelperBlockListener extends BlockListener {
             return;
         }
 
-        LyTreeHelperConfiguration worldConfig = this.plugin.getWorldConfig(event.getBlock().getWorld().getName());
+        final LyTreeHelperConfiguration worldConfig = this.plugin.getWorldConfig(event.getBlock().getWorld().getName());
 
         if (event.getBlock().getType() == Material.LEAVES) {
             if (worldConfig.isDestroyAll()) {
@@ -268,7 +270,7 @@ public class LyTreeHelperBlockListener extends BlockListener {
                 }
 
                 if (worldConfig.getDestructionTools().size() > 0) {
-                    for (int destructionTool : worldConfig.getDestructionTools()) {
+                    for (final int destructionTool : worldConfig.getDestructionTools()) {
                         if (event.getPlayer().getItemInHand().getTypeId() == destructionTool) {
                             destroyTree(event.getBlock());
                         }
@@ -280,7 +282,7 @@ public class LyTreeHelperBlockListener extends BlockListener {
                 fasterDecay(event.getBlock());
             }
             if (worldConfig.getHarvestTools().size() > 0) {
-                for (int harvestTool : worldConfig.getHarvestTools()) {
+                for (final int harvestTool : worldConfig.getHarvestTools()) {
                     if (event.getPlayer().getItemInHand().getTypeId() == harvestTool) {
                         dropLeaveItems(event.getBlock());
                         break;
@@ -298,7 +300,7 @@ public class LyTreeHelperBlockListener extends BlockListener {
             boolean destructionAllowed = false;
 
             if (worldConfig.getDestructionTools().size() > 0) {
-                for (int destructionTool : worldConfig.getDestructionTools()) {
+                for (final int destructionTool : worldConfig.getDestructionTools()) {
                     if (event.getPlayer().getItemInHand().getTypeId() == destructionTool) {
                         destructionAllowed = true;
                     }
@@ -309,7 +311,7 @@ public class LyTreeHelperBlockListener extends BlockListener {
             
             if(destructionAllowed) {
                 event.setCancelled(true);
-                ItemStack stack = new ItemStack(Material.LOG, 1, (short)0, Byte.valueOf(event.getBlock().getData()));
+                final ItemStack stack = new ItemStack(Material.LOG, 1, (short)0, Byte.valueOf(event.getBlock().getData()));
                 event.getBlock().setType(Material.AIR);
                 event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), stack);
                 destroyTree(event.getBlock().getRelative(0, 1, 0));
@@ -323,7 +325,7 @@ public class LyTreeHelperBlockListener extends BlockListener {
             boolean destructionAllowed = false;
 
             if (worldConfig.getDestructionTools().size() > 0) {
-                for (int destructionTool : worldConfig.getDestructionTools()) {
+                for (final int destructionTool : worldConfig.getDestructionTools()) {
                     if (event.getPlayer().getItemInHand().getTypeId() == destructionTool) {
                         destructionAllowed = true;
                     }
@@ -334,7 +336,7 @@ public class LyTreeHelperBlockListener extends BlockListener {
             
             if(destructionAllowed) {
                 event.setCancelled(true);
-                ItemStack stack = new ItemStack(Material.LOG, 1, (short)0, Byte.valueOf(event.getBlock().getData()));
+                final ItemStack stack = new ItemStack(Material.LOG, 1, (short)0, Byte.valueOf(event.getBlock().getData()));
                 event.getBlock().setType(Material.AIR);
                 event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), stack);
                 destroyTree(event.getBlock().getRelative(0, 1, 0));
@@ -343,41 +345,28 @@ public class LyTreeHelperBlockListener extends BlockListener {
     }
 
     public void dropLeaveItems(Block block) {
-        LyTreeHelperConfiguration worldConfig = this.plugin.getWorldConfig(block.getWorld().getName());
-
+        final LyTreeHelperConfiguration worldConfig = this.plugin.getWorldConfig(block.getWorld().getName());
         if(worldConfig.isOnlyTopDown()) {
-            if(worldConfig.isDestroyAll() && !isGroundConnection(block)) {
+            if(worldConfig.isDestroyAll() && !isGroundConnection(block))
                 return;
-            } else {
-                if(block.getFace(BlockFace.UP).getType() != Material.AIR) {
-                    return;
-                }
-            }
+            else if(block.getFace(BlockFace.UP).getType() != Material.AIR)
+                return;
         }
-
-        Random generator = new Random();
-        int rand = generator.nextInt(10000);
-        
-        if (rand >= (10000.0 - (worldConfig.getAppleChance() * 100.0))) {
+        final Random generator = new Random();
+        final int rand = generator.nextInt(10000);
+        if (rand >= (10000.0 - (worldConfig.getAppleChance() * 100.0)))
             block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.APPLE, 1));
-        }
-        if (rand >= (10000.0 - (worldConfig.getGoldenAppleChance() * 100.0))) {
+        if (rand >= (10000.0 - (worldConfig.getGoldenAppleChance() * 100.0)))
             block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.GOLDEN_APPLE, 1));
-        }
-        if (rand >= (10000.0 - (worldConfig.getLeavesChance() * 100.0))) {
+        if (rand >= (10000.0 - (worldConfig.getLeavesChance() * 100.0)))
             block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.LEAVES, 1));
-        }
-        if (rand >= (10000.0 - (worldConfig.getSaplingChance() * 100.0))) {
-            block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.SAPLING, 1));
-        }
-
-        Iterator<Map.Entry<String,Double>> iterator = worldConfig.getCustomDrops().entrySet().iterator();
+        if (rand >= (10000.0 - (worldConfig.getSaplingChance() * 100.0)))
+            block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.SAPLING, 1, (short)0, (byte)(block.getData() & ~0x8)));
+        final Iterator<Map.Entry<String,Double>> iterator = worldConfig.getCustomDrops().entrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<String,Double> pair = (Map.Entry<String,Double>)iterator.next();
-            if (rand >= (10000.0 - (pair.getValue() * 100.0))) {
-                block.getWorld().dropItemNaturally(block.getLocation(),
-                        new ItemStack(Material.getMaterial(Integer.parseInt(pair.getKey())), 1));
-            }
+            final Map.Entry<String,Double> pair = iterator.next();
+            if (rand >= (10000.0 - (pair.getValue() * 100.0)))
+                block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.getMaterial(Integer.parseInt(pair.getKey())), 1));
         }
     }
 
@@ -408,8 +397,8 @@ public class LyTreeHelperBlockListener extends BlockListener {
             return true;
         }
 
-        for (Location iterator : this.checkBlocks) {
-            Block relative = block.getRelative((int)iterator.getX(), (int)iterator.getY(), (int)iterator.getZ());
+        for (final Location iterator : this.checkBlocks) {
+            final Block relative = block.getRelative((int)iterator.getX(), (int)iterator.getY(), (int)iterator.getZ());
             if ((relative.getType() == Material.LEAVES)
                     || (relative.getType() == Material.LOG)
                     || (relative.getType() == Material.SNOW)) {
